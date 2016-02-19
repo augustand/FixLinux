@@ -126,7 +126,15 @@ set timeoutlen=1000 ttimeoutlen=0
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "设置当文件被改动时自动载入
 set autoread
-" quickfix模式
+
+"自动切换当前目录为当前文件所在的目录 
+set autochdir 
+
+"选中一段文字并全文搜索这段文字 
+vmap <silent> ,/ y/<C-R>=escape(@", '\\/.*$^~[]')<CR><CR> 
+vmap <silent> ,? y?<C-R>=escape(@", '\\/.*$^~[]')<CR><CR> 
+
+"quickfix模式
 autocmd FileType c,cpp map <buffer> <leader><space> :w<cr>:make<cr>
 "代码补全 
 set completeopt=preview,menu 
@@ -156,6 +164,13 @@ set nocompatible
 " 语法高亮
 syntax enable
 " 去掉输入错误的提示声音
+
+"解决菜单乱码
+set encoding=utf-8 
+
+"fileencodings需要注意顺序，前面的字符集应该比后面的字符集大 
+set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1 
+set imcmdline 
 
 set noeb
 " 在处理未保存或只读文件的时候，弹出确认
@@ -192,6 +207,15 @@ set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
 "语言设置
 set langmenu=zh_CN.UTF-8
 set helplang=cn
+
+"不自动换行 
+set nowrap 
+""设置超过100字符自动换行 
+set textwidth=100 
+""设置超过100列的字符带下划线 
+au BufWinEnter * let w:m2=matchadd('Underlined', '\%>100v.\+', -1) 
+syn match out80 /\%80v./ containedin=ALL 
+hi out80 guifg=white guibg=red 
 
 " 我的状态行显示的内容（包括文件类型和解码）
 set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
@@ -236,3 +260,58 @@ set scrolloff=3
 set smartindent
 " 高亮显示普通txt文件（需要txt.vim脚本）
 au BufRead,BufNewFile *  setfiletype txt
+
+"启动后最大化 
+au GUIEnter * simalt ~x 
+
+"置粘贴模式，这样粘贴过来的程序代码就不会错位了。 
+set paste 
+
+"设置字体 
+"if has("gui") 
+"    if has("win32") 
+"        "启动时会弹出字体选择框，如果取消，则采用系统默认字体 
+"        "set guifont=* 
+"        "Windows默认使用的字体，字体较粗 
+"        "set guifont=Fixedsys 
+"        "中文显示变形，字体较粗 
+"        "set guifont=Monospace:h9 
+"        "中文显示变形，字体较细 
+"        "set guifont=Consolas:h9 
+"        "中文显示变形，字体较细 
+"        "set guifont=Lucida\ Console:h9 
+"        "中文显示变形，字体较细 
+"        set guifont=Monaco:h9 
+"        "中文显示变形，字体较细 
+"        "set guifont=Andale\ Mono:h10 
+"        "中文显示变形，字体较细 
+"        "set guifont=Bitstream\ Vera\ Sans\ Mono:h9 
+"        "需要运行修改版的gvim才能识别 
+"        "set guifont=YaHei\ Consolas\ Hybrid:h9 
+"        "如果guifontwide采用中文字体，汉字将自动使用guifontwide，英文自动使用guifont 
+"        set guifontwide=YaHei\ Consolas\ Hybrid:h9 
+"    else 
+"        set guifont=SimSun:h10 
+"    endif 
+"    "set columns=128 lines=36 
+"endif
+
+"打开链接 
+function! OpenUrl() 
+    let s:url = GetPatternAtCursor('\v(https?://|ftp://|file:/{3}|www\.)((\w|-)+\.)+(\w|-)+(:\d+)?(/(\w|[~@#$%^&+=/.?-])+)?') 
+    "echo s:url 
+    if s:url == "" 
+        echohl WarningMsg 
+        echomsg '在光标处未发现URL！' 
+        echohl None 
+    else 
+        if GetSystem() == "windows" 
+            call system("explorer " . s:url) 
+        else 
+           call system("firefox " . s:url . " &") 
+        endif 
+    endif 
+    unlet s:url 
+	endfunction 
+	nmap <C-LeftMouse> :call OpenUrl()<CR> 
+
